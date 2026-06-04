@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vind IL – Turneringssystem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #111827;
+    --bg3: #1a2234;
+    --card: #141c2e;
+    --border: #1e2d47;
+    --accent: #00c2ff;
+    --accent2: #ff6b35;
+    --accent3: #00e5a0;
+    --text: #e8eef8;
+    --muted: #6b7fa3;
+    --danger: #ff4757;
+    --win: #00e5a0;
+    --lose: #ff4757;
+    --draw: #ffd700;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── BACKGROUND EFFECT ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,194,255,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255,107,53,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    height: 64px;
+    background: rgba(10,14,26,0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,194,255,0.4);
+  }
+
+  .nav-logo span { color: var(--accent2); }
+
+  .nav-links {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .nav-btn:hover, .nav-btn.active {
+    color: var(--text);
+    background: var(--bg3);
+  }
+
+  .nav-btn.active {
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    border-radius: 6px 6px 0 0;
+  }
+
+  #nav-user {
+    font-size: 0.8rem;
+    color: var(--accent3);
+    padding: 0.4rem 0.8rem;
+    border: 1px solid rgba(0,229,160,0.3);
+    border-radius: 20px;
+  }
+
+  /* ── MAIN ── */
+  main {
+    position: relative;
+    z-index: 1;
+    padding-top: 64px;
+    min-height: 100vh;
+  }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 6rem 2rem 4rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(0,194,255,0.1);
+    border: 1px solid rgba(0,194,255,0.2);
+    padding: 0.4rem 1.2rem;
+    border-radius: 20px;
+    margin-bottom: 1.5rem;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(4rem, 10vw, 8rem);
+    line-height: 0.9;
+    letter-spacing: 4px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  .hero h1 .highlight { color: var(--accent); }
+  .hero h1 .highlight2 { color: var(--accent2); }
+
+  .hero-sub {
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    animation: fadeUp 0.6s 0.2s ease both;
+    line-height: 1.6;
+  }
+
+  .hero-actions {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.75rem 1.8rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #33cfff; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,194,255,0.3); }
+
+  .btn-secondary {
+    background: var(--bg3);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--card); border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: #ff6b7a; }
+
+  .btn-success { background: var(--accent3); color: #000; }
+  .btn-success:hover { background: #33eab5; }
+
+  .btn-sm { padding: 0.4rem 1rem; font-size: 0.8rem; }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* ── SECTIONS ── */
+  .section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s;
+  }
+
+  .card:hover { border-color: rgba(0,194,255,0.2); }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-sport { background: rgba(0,194,255,0.15); color: var(--accent); }
+  .badge-planlagt { background: rgba(107,127,163,0.2); color: var(--muted); }
+  .badge-pagaende { background: rgba(255,215,0,0.15); color: var(--draw); }
+  .badge-ferdig { background: rgba(0,229,160,0.15); color: var(--win); }
+
+  /* ── KAMPER TABLE ── */
+  .matches-container { margin-top: 1rem; }
+
+  .match-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.2rem 1.5rem;
+    margin-bottom: 0.75rem;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s;
+  }
+
+  .match-card:hover { border-color: var(--accent); background: var(--bg3); }
+
+  .match-team {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  .match-team.right { text-align: right; }
+
+  .match-score {
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .score-display {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+  }
+
+  .match-time {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 0.2rem;
+  }
+
+  .match-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    grid-column: 1 / -1;
+  }
+
+  /* ── STATS GRID ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 0.3rem;
+  }
+
+  /* ── FORMS ── */
+  .form-group { margin-bottom: 1.2rem; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,194,255,0.1);
+  }
+
+  select option { background: var(--bg2); }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 480px;
+    transform: translateY(20px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  /* ── LOGIN PAGE ── */
+  .login-wrap {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .login-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .login-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .login-logo span { color: var(--accent2); }
+  .login-sub { text-align: center; color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--bg2);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 1.5rem;
+  }
+
+  .tab {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.6rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: var(--card);
+    color: var(--text);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── ALERTS ── */
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .alert-error { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: #ff8a96; }
+  .alert-success { background: rgba(0,229,160,0.1); border: 1px solid rgba(0,229,160,0.3); color: var(--accent3); }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(30,45,71,0.5);
+    font-size: 0.9rem;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2rem 0;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fadeUp 0.4s ease both; }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .empty h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 0.5rem; color: var(--text); }
+
+  /* ── BACK BUTTON ── */
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s;
+  }
+  .back-btn:hover { color: var(--accent); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .match-card { grid-template-columns: 1fr; text-align: center; }
+    .match-team.right { text-align: center; }
+    nav { padding: 0 1rem; }
+    .nav-links .nav-btn:not(#nav-user) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo">VIND<span>IL</span></div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showPage('home')">Hjem</button>
+    <button class="nav-btn" onclick="showPage('turneringer')">Turneringer</button>
+    <button class="nav-btn" id="nav-admin-btn" style="display:none" onclick="showPage('admin')">Admin</button>
+    <button class="nav-btn" id="nav-login-btn" onclick="showPage('login')">Logg inn</button>
+    <span id="nav-user" style="display:none"></span>
+    <button class="nav-btn" id="nav-logout-btn" style="display:none" onclick="logout()">Logg ut</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ══ HOME ══ -->
+<div id="page-home" class="page active">
+  <div class="hero">
+    <div class="hero-tag">⚡ Turneringssystem 2026</div>
+    <h1>VIND<br><span class="highlight">IDRETTSLAG</span></h1>
+    <p class="hero-sub">Alt du trenger for å administrere turneringer – kampoppsett, resultater og deltakere på ett sted.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="showPage('turneringer')">Se turneringer</button>
+      <button class="btn btn-secondary" onclick="showPage('login')">Logg inn</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="stats-grid" id="home-stats">
+      <div class="stat-card"><div class="stat-number" id="stat-t">–</div><div class="stat-label">Turneringer</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-l">–</div><div class="stat-label">Lag</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-d">–</div><div class="stat-label">Deltakere</div></div>
+      <div class="stat-card"><div class="stat-number" id="stat-k">–</div><div class="stat-label">Kamper</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TURNERINGER ══ -->
+<div id="page-turneringer" class="page">
+  <div class="section">
+    <h2 class="section-title">Turneringer</h2>
+    <p class="section-sub">Velg en turnering for å se kampoppsett og resultater</p>
+    <div class="card-grid" id="turnering-list">
+      <div class="empty"><div class="empty-icon">🏆</div><h3>Laster...</h3></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ KAMPOPPSETT ══ -->
+<div id="page-kamper" class="page">
+  <div class="section">
+    <button class="back-btn" onclick="showPage('turneringer')">← Tilbake til turneringer</button>
+    <h2 class="section-title" id="kamp-title">Kamper</h2>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('tab-kamper')">Kampoppsett</button>
+      <button class="tab" onclick="switchTab('tab-lag')">Lag & Deltakere</button>
+    </div>
+
+    <div id="tab-kamper" class="tab-content active">
+      <div id="kamp-list" class="matches-container"></div>
+    </div>
+
+    <div id="tab-lag" class="tab-content">
+      <div id="lag-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOGIN ══ -->
+<div id="page-login" class="page">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-logo">VIND<span>IL</span></div>
+      <p class="login-sub">Logg inn for å administrere</p>
+      <div id="login-alert"></div>
+      <div class="form-group">
+        <label>Brukernavn</label>
+        <input type="text" id="login-user" placeholder="ditt brukernavn">
+      </div>
+      <div class="form-group">
+        <label>Passord</label>
+        <input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="doLogin()">Logg inn</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="page-admin" class="page">
+  <div class="section">
+    <h2 class="section-title">Admin Panel</h2>
+    <p class="section-sub">Administrer turneringer, lag, kamper og brukere</p>
+
+    <div class="stats-grid" id="admin-stats"></div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('atab-turnering')">Turneringer</button>
+      <button class="tab" onclick="switchTab('atab-lag')">Lag</button>
+      <button class="tab" onclick="switchTab('atab-deltaker')">Deltakere</button>
+      <button class="tab" onclick="switchTab('atab-kamp')">Kamper</button>
+      <button class="tab" onclick="switchTab('atab-brukere')">Brukere</button>
+    </div>
+
+    <!-- TURNERINGER -->
+    <div id="atab-turnering" class="tab-content active">
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title" style="margin-bottom:1rem">Ny turnering</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Navn</label><input id="t-navn" placeholder="f.eks. Vårturneringen 2026"></div>
+          <div class="form-group"><label>Idrett</label>
+            <select id="t-idrett">
+              <option>Fotball</option><option>Håndball</option><option>Volleyball</option><option>Basketball</option><option>Badminton</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Startdato</label><input type="date" id="t-start"></div>
+          <div class="form-group"><label>Sluttdato</label><input type="date" id="t-slutt"></div>
+        </div>
+        <div class="form-group"><label>Beskrivelse</label><textarea id="t-besk" rows="2" placeholder="Kort beskrivelse..."></textarea></div>
+        <button class="btn btn-primary" onclick="createTurnering()">Opprett turnering</button>
+      </div>
+      <div id="admin-turnering-list"></div>
+    </div>
+
+    <!-- LAG -->
+    <div id="atab-lag" class="tab-content">
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title" style="margin-bottom:1rem">Nytt lag</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Lagnavn</label><input id="l-navn" placeholder="f.eks. Jessheim FK"></div>
+          <div class="form-group"><label>Idrett</label>
+            <select id="l-idrett">
+              <option>Fotball</option><option>Håndball</option><option>Volleyball</option><option>Basketball</option><option>Badminton</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Turnering</label><select id="l-turnering"></select></div>
+        </div>
+        <button class="btn btn-primary" onclick="createLag()">Legg til lag</button>
+      </div>
+      <div id="admin-lag-list"></div>
+    </div>
+
+    <!-- DELTAKERE -->
+    <div id="atab-deltaker" class="tab-content">
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title" style="margin-bottom:1rem">Ny deltaker</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Fornavn</label><input id="d-fornavn" placeholder="Fornavn"></div>
+          <div class="form-group"><label>Etternavn</label><input id="d-etternavn" placeholder="Etternavn"></div>
+          <div class="form-group"><label>Fødselsdato</label><input type="date" id="d-fodt"></div>
+          <div class="form-group"><label>E-post</label><input type="email" id="d-epost" placeholder="epost@eksempel.no"></div>
+          <div class="form-group"><label>Lag</label><select id="d-lag"></select></div>
+        </div>
+        <button class="btn btn-primary" onclick="createDeltaker()">Legg til deltaker</button>
+      </div>
+    </div>
+
+    <!-- KAMPER -->
+    <div id="atab-kamp" class="tab-content">
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title" style="margin-bottom:1rem">Ny kamp</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Turnering</label><select id="k-turnering" onchange="loadLagForKamp()"></select></div>
+          <div class="form-group"><label>Tidspunkt</label><input type="datetime-local" id="k-tid"></div>
+          <div class="form-group"><label>Lag 1</label><select id="k-lag1"></select></div>
+          <div class="form-group"><label>Lag 2</label><select id="k-lag2"></select></div>
+          <div class="form-group"><label>Sted</label><input id="k-sted" placeholder="f.eks. Idrettshallen"></div>
+        </div>
+        <button class="btn btn-primary" onclick="createKamp()">Opprett kamp</button>
+      </div>
+      <div id="admin-kamp-list"></div>
+    </div>
+
+    <!-- BRUKERE -->
+    <div id="atab-brukere" class="tab-content">
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-title" style="margin-bottom:1rem">Ny bruker</div>
+        <div class="form-grid">
+          <div class="form-group"><label>Brukernavn</label><input id="b-navn" placeholder="brukernavn"></div>
+          <div class="form-group"><label>Passord</label><input type="password" id="b-pass" placeholder="••••••••"></div>
+          <div class="form-group"><label>E-post</label><input type="email" id="b-epost" placeholder="epost@eksempel.no"></div>
+          <div class="form-group"><label>Rolle</label>
+            <select id="b-rolle">
+              <option value="lagleder">Lagleder</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="createBruker()">Opprett bruker</button>
+      </div>
+      <div id="admin-bruker-list"></div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ══ MODAL: RESULTAT ══ -->
+<div class="modal-overlay" id="resultat-modal">
+  <div class="modal">
+    <div class="modal-title">Registrer Resultat</div>
+    <input type="hidden" id="res-kamp-id">
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1.2rem" id="res-kamp-info"></p>
+    <div class="form-grid">
+      <div class="form-group"><label id="res-lag1-label">Lag 1</label><input type="number" id="res-lag1" min="0" value="0"></div>
+      <div class="form-group"><label id="res-lag2-label">Lag 2</label><input type="number" id="res-lag2" min="0" value="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-success btn-full" onclick="saveResultat()">Lagre resultat</button>
+      <button class="btn btn-secondary" onclick="closeModal('resultat-modal')">Avbryt</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ STATE ══
+let currentUser = null;
+let currentTurnering = null;
+let allTurneringer = [];
+let allLag = [];
+
+// ══ INIT ══
+async function init() {
+  currentUser = await api('/api/me');
+  updateNav();
+  loadHomeStats();
+}
+
+// ══ API ══
+async function api(url, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  return r.json();
+}
+
+// ══ NAV ══
+function updateNav() {
+  const loggedIn = !!currentUser;
+  document.getElementById('nav-login-btn').style.display = loggedIn ? 'none' : '';
+  document.getElementById('nav-logout-btn').style.display = loggedIn ? '' : 'none';
+  document.getElementById('nav-user').style.display = loggedIn ? '' : 'none';
+  document.getElementById('nav-admin-btn').style.display = (loggedIn && currentUser.rolle === 'admin') ? '' : 'none';
+  if (loggedIn) document.getElementById('nav-user').textContent = '👤 ' + currentUser.brukernavn;
+}
+
+// ══ PAGES ══
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'turneringer') loadTurneringer();
+  if (name === 'admin') loadAdmin();
+}
+
+// ══ TABS ══
+function switchTab(tabId) {
+  const parent = document.getElementById(tabId).closest('.page, .section');
+  parent.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ══ HOME STATS ══
+async function loadHomeStats() {
+  try {
+    const s = await api('/api/admin/stats');
+    document.getElementById('stat-t').textContent = s.turneringer;
+    document.getElementById('stat-l').textContent = s.lag;
+    document.getElementById('stat-d').textContent = s.deltakere;
+    document.getElementById('stat-k').textContent = s.kamper;
+  } catch(e) {}
+}
+
+// ══ TURNERINGER ══
+async function loadTurneringer() {
+  const list = document.getElementById('turnering-list');
+  list.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><h3>Laster...</h3></div>';
+  allTurneringer = await api('/api/turneringer');
+  if (!allTurneringer.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">🏆</div><h3>Ingen turneringer ennå</h3><p>Administrator kan opprette turneringer i adminpanelet.</p></div>';
+    return;
+  }
+  list.innerHTML = allTurneringer.map(t => `
+    <div class="card fade-in" style="cursor:pointer" onclick="openTurnering(${t.turnering_id}, '${t.navn}')">
+      <div class="card-meta">
+        <span class="badge badge-sport">${t.idrett}</span>
+        <span class="badge badge-ferdig">${formatDate(t.startdato)} – ${formatDate(t.sluttdato)}</span>
+      </div>
+      <div class="card-title">${t.navn}</div>
+      <p style="color:var(--muted);font-size:0.9rem;margin-bottom:1rem">${t.beskrivelse || 'Ingen beskrivelse'}</p>
+      <button class="btn btn-secondary btn-sm">Se kamper →</button>
+    </div>
+  `).join('');
+}
+
+async function openTurnering(id, navn) {
+  currentTurnering = id;
+  document.getElementById('kamp-title').textContent = navn;
+  showPage('kamper');
+  loadKamper(id);
+  loadLagOversikt(id);
+}
+
+async function loadKamper(id) {
+  const list = document.getElementById('kamp-list');
+  list.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><h3>Laster kamper...</h3></div>';
+  const kamper = await api(`/api/turneringer/${id}/kamper`);
+  if (!kamper.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">⚽</div><h3>Ingen kamper ennå</h3></div>';
+    return;
+  }
+  list.innerHTML = kamper.map(k => {
+    const ferdig = k.status === 'ferdig';
+    const score = ferdig ? `${k.resultat_lag1} – ${k.resultat_lag2}` : 'vs';
+    return `
+      <div class="match-card fade-in">
+        <div class="match-team">${k.lag1_navn}</div>
+        <div class="match-score">
+          <div class="score-display" style="color:${ferdig ? 'var(--accent3)' : 'var(--muted)'}">${score}</div>
+          <div class="match-time">${formatDateTime(k.tidspunkt)}</div>
+          <div style="margin-top:0.3rem"><span class="badge badge-${k.status}">${k.status}</span></div>
+        </div>
+        <div class="match-team right">${k.lag2_navn}</div>
+        <div class="match-meta">
+          <span>📍 ${k.sted || 'Sted ikke satt'}</span>
+          ${currentUser ? `<button class="btn btn-sm btn-secondary" onclick="openResultatModal(${k.kamp_id},'${k.lag1_navn}','${k.lag2_navn}')">Registrer resultat</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+async function loadLagOversikt(id) {
+  const list = document.getElementById('lag-list');
+  const lag = await api(`/api/turneringer/${id}/lag`);
+  if (!lag.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><h3>Ingen lag registrert</h3></div>'; return; }
+  list.innerHTML = '<div class="card-grid">' + lag.map(l => `
+    <div class="card">
+      <div class="card-meta"><span class="badge badge-sport">${l.idrett}</span></div>
+      <div class="card-title">${l.lagnavn}</div>
+      <button class="btn btn-secondary btn-sm" onclick="loadDeltakereInline(${l.lag_id}, this)">Vis deltakere</button>
+      <div id="del-${l.lag_id}"></div>
+    </div>`).join('') + '</div>';
+}
+
+async function loadDeltakereInline(id, btn) {
+  const div = document.getElementById('del-' + id);
+  if (div.innerHTML) { div.innerHTML = ''; btn.textContent = 'Vis deltakere'; return; }
+  btn.textContent = 'Skjul deltakere';
+  const d = await api(`/api/lag/${id}/deltakere`);
+  div.innerHTML = '<div style="margin-top:1rem">' + (d.length ? d.map(p => `<div style="padding:0.3rem 0;border-bottom:1px solid var(--border);font-size:0.9rem">👤 ${p.fornavn} ${p.etternavn}</div>`).join('') : '<p style="color:var(--muted);font-size:0.85rem;margin-top:0.5rem">Ingen deltakere registrert</p>') + '</div>';
+}
+
+// ══ RESULTAT MODAL ══
+function openResultatModal(kampId, lag1, lag2) {
+  document.getElementById('res-kamp-id').value = kampId;
+  document.getElementById('res-kamp-info').textContent = lag1 + ' vs ' + lag2;
+  document.getElementById('res-lag1-label').textContent = lag1;
+  document.getElementById('res-lag2-label').textContent = lag2;
+  document.getElementById('res-lag1').value = 0;
+  document.getElementById('res-lag2').value = 0;
+  document.getElementById('resultat-modal').classList.add('open');
+}
+
+async function saveResultat() {
+  const id = document.getElementById('res-kamp-id').value;
+  const r1 = document.getElementById('res-lag1').value;
+  const r2 = document.getElementById('res-lag2').value;
+  await api(`/api/kamper/${id}/resultat`, 'POST', { resultat_lag1: r1, resultat_lag2: r2 });
+  closeModal('resultat-modal');
+  loadKamper(currentTurnering);
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ══ LOGIN ══
+async function doLogin() {
+  const brukernavn = document.getElementById('login-user').value;
+  const passord = document.getElementById('login-pass').value;
+  const r = await api('/api/login', 'POST', { brukernavn, passord });
+  if (r.error) {
+    document.getElementById('login-alert').innerHTML = `<div class="alert alert-error">${r.error}</div>`;
+    return;
+  }
+  currentUser = await api('/api/me');
+  updateNav();
+  showPage(currentUser.rolle === 'admin' ? 'admin' : 'turneringer');
+}
+
+async function logout() {
+  await api('/api/logout', 'POST');
+  currentUser = null;
+  updateNav();
+  showPage('home');
+}
+
+// ══ ADMIN ══
+async function loadAdmin() {
+  const stats = await api('/api/admin/stats');
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-number">${stats.turneringer}</div><div class="stat-label">Turneringer</div></div>
+    <div class="stat-card"><div class="stat-number">${stats.lag}</div><div class="stat-label">Lag</div></div>
+    <div class="stat-card"><div class="stat-number">${stats.deltakere}</div><div class="stat-label">Deltakere</div></div>
+    <div class="stat-card"><div class="stat-number">${stats.kamper}</div><div class="stat-label">Kamper</div></div>
+  `;
+  loadAdminTurneringer();
+  loadAdminBrukere();
+  const t = await api('/api/turneringer');
+  allTurneringer = t;
+  const sel = document.getElementById('l-turnering');
+  const ksel = document.getElementById('k-turnering');
+  sel.innerHTML = t.map(x => `<option value="${x.turnering_id}">${x.navn}</option>`).join('');
+  ksel.innerHTML = t.map(x => `<option value="${x.turnering_id}">${x.navn}</option>`).join('');
+  loadAllLag();
+}
+
+async function loadAdminTurneringer() {
+  const t = await api('/api/turneringer');
+  document.getElementById('admin-turnering-list').innerHTML = `
+    <div class="card"><table>
+      <thead><tr><th>Navn</th><th>Idrett</th><th>Startdato</th><th>Sluttdato</th></tr></thead>
+      <tbody>${t.map(x => `<tr><td>${x.navn}</td><td><span class="badge badge-sport">${x.idrett}</span></td><td>${formatDate(x.startdato)}</td><td>${formatDate(x.sluttdato)}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+async function loadAllLag() {
+  const t = await api('/api/turneringer');
+  let all = [];
+  for (const tur of t) {
+    const lag = await api(`/api/turneringer/${tur.turnering_id}/lag`);
+    all = all.concat(lag);
+  }
+  allLag = all;
+  document.getElementById('admin-lag-list').innerHTML = `
+    <div class="card"><table>
+      <thead><tr><th>Lagnavn</th><th>Idrett</th></tr></thead>
+      <tbody>${all.map(l => `<tr><td>${l.lagnavn}</td><td>${l.idrett}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+  const dsel = document.getElementById('d-lag');
+  dsel.innerHTML = all.map(l => `<option value="${l.lag_id}">${l.lagnavn}</option>`).join('');
+}
+
+async function loadLagForKamp() {
+  const tid = document.getElementById('k-turnering').value;
+  const lag = await api(`/api/turneringer/${tid}/lag`);
+  const opts = lag.map(l => `<option value="${l.lag_id}">${l.lagnavn}</option>`).join('');
+  document.getElementById('k-lag1').innerHTML = opts;
+  document.getElementById('k-lag2').innerHTML = opts;
+}
+
+async function loadAdminBrukere() {
+  const b = await api('/api/admin/brukere');
+  document.getElementById('admin-bruker-list').innerHTML = `
+    <div class="card"><table>
+      <thead><tr><th>Brukernavn</th><th>Rolle</th><th>E-post</th></tr></thead>
+      <tbody>${b.map(x => `<tr><td>${x.brukernavn}</td><td><span class="badge badge-${x.rolle === 'admin' ? 'pagaende' : 'sport'}">${x.rolle}</span></td><td>${x.epost}</td></tr>`).join('')}</tbody>
+    </table></div>`;
+}
+
+async function createTurnering() {
+  const r = await api('/api/admin/turneringer', 'POST', {
+    navn: document.getElementById('t-navn').value,
+    idrett: document.getElementById('t-idrett').value,
+    startdato: document.getElementById('t-start').value,
+    sluttdato: document.getElementById('t-slutt').value,
+    beskrivelse: document.getElementById('t-besk').value,
+  });
+  if (!r.error) { loadAdminTurneringer(); loadHomeStats(); alert('Turnering opprettet!'); }
+  else alert('Feil: ' + r.error);
+}
+
+async function createLag() {
+  const r = await api('/api/lag', 'POST', {
+    lagnavn: document.getElementById('l-navn').value,
+    idrett: document.getElementById('l-idrett').value,
+    turnering_id: document.getElementById('l-turnering').value,
+  });
+  if (!r.error) { loadAllLag(); loadHomeStats(); alert('Lag opprettet!'); }
+  else alert('Feil: ' + r.error);
+}
+
+async function createDeltaker() {
+  const r = await api('/api/deltakere', 'POST', {
+    fornavn: document.getElementById('d-fornavn').value,
+    etternavn: document.getElementById('d-etternavn').value,
+    fodselsdato: document.getElementById('d-fodt').value,
+    epost: document.getElementById('d-epost').value,
+    lag_id: document.getElementById('d-lag').value,
+  });
+  if (!r.error) { loadHomeStats(); alert('Deltaker lagt til!'); }
+  else alert('Feil: ' + r.error);
+}
+
+async function createKamp() {
+  const r = await api('/api/admin/kamper', 'POST', {
+    turnering_id: document.getElementById('k-turnering').value,
+    lag1_id: document.getElementById('k-lag1').value,
+    lag2_id: document.getElementById('k-lag2').value,
+    tidspunkt: document.getElementById('k-tid').value,
+    sted: document.getElementById('k-sted').value,
+  });
+  if (!r.error) { loadHomeStats(); alert('Kamp opprettet!'); }
+  else alert('Feil: ' + r.error);
+}
+
+async function createBruker() {
+  const r = await api('/api/admin/brukere', 'POST', {
+    brukernavn: document.getElementById('b-navn').value,
+    passord: document.getElementById('b-pass').value,
+    rolle: document.getElementById('b-rolle').value,
+    epost: document.getElementById('b-epost').value,
+  });
+  if (!r.error) { loadAdminBrukere(); alert('Bruker opprettet!'); }
+  else alert('Feil: ' + r.error);
+}
+
+// ══ UTILS ══
+function formatDate(d) {
+  if (!d) return '–';
+  return new Date(d).toLocaleDateString('nb-NO', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function formatDateTime(d) {
+  if (!d) return '–';
+  return new Date(d).toLocaleString('nb-NO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+});
+
+init();
+</script>
+</body>
+</html>
